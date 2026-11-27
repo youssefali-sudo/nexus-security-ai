@@ -34,9 +34,9 @@ class LogReviewResponse(BaseModel):
     disclaimer: str
 
 RULES = [
-    ("authentication", "high", re.compile(r"\\b(authentication failed|invalid password|login denied)\\b", re.I), "Repeated authentication-failure wording was found."),
-    ("service", "medium", re.compile(r"\\b(service unavailable|connection refused|timeout)\\b", re.I), "Service availability wording was found."),
-    ("configuration", "low", re.compile(r"\\b(debug mode enabled|default configuration)\\b", re.I), "A configuration-review phrase was found."),
+    ("authentication", "high", re.compile(r"\b(authentication failed|invalid password|login denied)\b", re.I), "Repeated authentication-failure wording was found."),
+    ("service", "medium", re.compile(r"\b(service unavailable|connection refused|timeout)\b", re.I), "Service availability wording was found."),
+    ("configuration", "low", re.compile(r"\b(debug mode enabled|default configuration)\b", re.I), "A configuration-review phrase was found."),
 ]
 
 @app.get("/api/v1/health")
