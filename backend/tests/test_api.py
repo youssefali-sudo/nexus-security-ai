@@ -59,3 +59,36 @@ def test_log_review_rejects_unknown_fields():
 def test_log_review_rejects_empty_input():
     response = client.post("/api/v1/reviews/logs", json={"text": ""})
     assert response.status_code == 422
+
+def test_defensive_engine_correlates_auth_sequence_and_redacts_raw_logs():
+    sample = "\n".join([
+        "LOGIN_FAILED user=demo", "LOGIN_FAILED user=demo",
+        "LOGIN_FAILED user=demo", "LOGIN_SUCCESS user=demo",
+        "MFA_DISABLED user=demo",
+    ])
+    response = client.post("/api/v1/analysis/defensive", json={"text": sample})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["lines_reviewed"] == 5
+    assert data["event_counts"]["AUTH_FAILURE"] == 3
+    assert data["risk_level"] in {"high", "critical"}
+    assert {item["code"] for item in data["findings"]} >= {"FAILURE_THEN_SUCCESS", "MFA_DISABLED"}
+    assert "user=demo" not in response.text
+
+def test_defensive_engine_prioritizes_critical_endpoint_alerts():
+    response = client.post("/api/v1/analysis/defensive", json={
+        "text": "MALWARE_DETECTED host=lab\nSERVICE_UNAVAILABLE"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["findings"][0]["severity"] == "critical"
+    assert data["risk_score"] >= 35
+
+def test_defensive_engine_empty_sample_is_low_risk():
+    response = client.post("/api/v1/analysis/defensive", json={"text": "routine heartbeat"})
+    assert response.status_code == 200
+    assert response.json()["risk_score"] == 0
+    assert response.json()["risk_level"] == "info"
+
+def test_defensive_engine_rejects_unknown_fields():
+    response = client.post("/api/v1/analysis/defensive", json={"text": "sample", "extra": 1})
+    assert response.status_code == 422

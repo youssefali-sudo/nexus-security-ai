@@ -1,12 +1,13 @@
-"""NEXUS defensive API starter; local-only, caller-supplied text review."""
+"""NEXUS defensive API; local-only analysis of caller-supplied samples."""
 from __future__ import annotations
 import re
 from typing import Literal
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, ConfigDict
 from backend.app.language_support import list_languages, resolve_language, review_source
+from backend.app.defensive_engine import analyze_events
 
-app = FastAPI(title="NEXUS SECURITY AI API", version="3.1.0",
+app = FastAPI(title="NEXUS SECURITY AI API", version="3.2.0",
               description="Local defensive review API. No target scanning or command execution.")
 
 class LogReviewRequest(BaseModel):
@@ -40,7 +41,7 @@ RULES = [
 
 @app.get("/api/v1/health")
 def health():
-    return {"status": "ok", "version": "3.1.0", "mode": "local-defensive-review"}
+    return {"status": "ok", "version": "3.2.0", "mode": "local-defensive-review"}
 
 @app.get("/api/v1/languages")
 def languages():
@@ -51,7 +52,6 @@ def review_source_code(payload: SourceReviewRequest):
     language = resolve_language(payload.language, payload.filename)
     if language is None:
         raise HTTPException(status_code=422, detail="Unsupported or missing language. Supply a supported language id or filename extension.")
-    # Inspect in memory only. Never execute, store, or echo caller source.
     return review_source(payload.code, language)
 
 @app.post("/api/v1/reviews/logs", response_model=LogReviewResponse)
@@ -65,6 +65,11 @@ def review_logs(payload: LogReviewRequest):
     return LogReviewResponse(source_label=payload.source_label, lines_reviewed=len(lines),
         observations=observations,
         disclaimer="Heuristic indicators only. Results are not proof of compromise; review the authorized source and context.")
+
+@app.post("/api/v1/analysis/defensive")
+def defensive_analysis(payload: LogReviewRequest):
+    """Correlate safe, caller-supplied log text without returning raw lines."""
+    return analyze_events(payload.text, payload.source_label)
 
 @app.get("/")
 def root():
