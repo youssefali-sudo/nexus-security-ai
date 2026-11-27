@@ -14,7 +14,7 @@ pip install -r backend/requirements.txt
 uvicorn backend.app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000/docs` for the interactive API documentation.
+Open `http://127.0.0.1:8000/docs` for the interactive API documentation.\n\nRun the smoke tests from the repository root with `pytest backend/tests`.
 
 ## Included endpoints
 - `GET /api/v1/health` — local service health.
