@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel, Field, ConfigDict
 
 app = FastAPI(
