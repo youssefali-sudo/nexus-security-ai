@@ -15,7 +15,7 @@ Open `http://127.0.0.1:8000/docs`. Run tests with `pytest backend/tests`.
 ## Endpoints
 - `GET /api/v1/health` — local service health.
 - `GET /api/v1/languages` — registry of 24 supported languages.
-- `POST /api/v1/reviews/logs` — heuristic review of caller-supplied log text.
+- `POST /api/v1/reviews/logs` — basic heuristic review of caller-supplied log text.\n- `POST /api/v1/analysis/defensive` — correlated event analysis with prioritized findings, severity and a 0–100 heuristic risk score.
 - `POST /api/v1/reviews/source` — heuristic static review of caller-supplied source code.
 
 Supported languages: Go, TypeScript, JavaScript, Python, Rust, Java, C, C++, C#, PHP, Ruby, Swift, Kotlin, Dart, Lua, R, Perl, Scala, Bash, PowerShell, SQL, Elixir, Haskell, and Zig.
@@ -30,3 +30,9 @@ The current engine uses conservative shared regular-expression indicators. It is
 
 ## Limitations
 This is a local-development scaffold, not production-ready. It has no authentication, authorization, database, tenant isolation, persistent evidence store, or rate limiting. Do not deploy publicly or submit sensitive logs or proprietary source code. Redact secrets and personal information first.
+
+
+## Defensive event correlation (v3.2)
+The `/api/v1/analysis/defensive` endpoint accepts a sanitized log sample (up to 50,000 characters) and returns aggregate event counts, categories, prioritized findings, recommended review actions, and a heuristic risk score. It recognizes authentication failures and successes, access denials, MFA disablement, privilege changes, endpoint alerts, service errors, and selected weak-configuration indicators.
+
+The engine is deterministic and local-only: it does not execute log content, contact systems, persist input, or return raw log lines. The score is a triage aid, not a probability of compromise or a certified risk rating. Validate findings against the original authorized source and surrounding context.
