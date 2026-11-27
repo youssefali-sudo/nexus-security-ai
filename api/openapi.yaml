@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: NEXUS SECURITY AI API
-  version: 3.0.0
+  version: 3.1.0
   description: Defensive, read-only review and security operations API. No target scanning or command execution.
 servers:
   - url: /api/v1
@@ -22,6 +22,35 @@ paths:
                   status: { type: string, const: ok }
                   version: { type: string }
                 required: [status, version]
+  /languages:
+    get:
+      operationId: listSupportedLanguages
+      summary: List supported source-review languages
+      security: []
+      responses:
+        '200':
+          description: Supported language identifiers and file extensions
+  /reviews/source:
+    post:
+      operationId: reviewSource
+      summary: Perform heuristic static review of caller-supplied source text
+      description: Source is inspected in memory only. It is never executed, stored, or echoed. Results are indicators, not proof.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, minLength: 1, maxLength: 100000 }
+                language: { type: string, maxLength: 40 }
+                filename: { type: string, maxLength: 180 }
+              required: [code]
+              additionalProperties: false
+      responses:
+        '200': { description: Heuristic source review result }
+        '422': { description: Unsupported language or invalid input }
   /assets:
     get:
       operationId: listAssets
