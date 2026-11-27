@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: NEXUS SECURITY AI API
-  version: 3.1.0
+  version: 3.2.0
   description: Defensive, read-only review and security operations API. No target scanning or command execution.
 servers:
   - url: /api/v1
