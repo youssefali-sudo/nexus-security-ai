@@ -17,6 +17,7 @@
   <button class="nav active" data-view="overview"><i>◫</i> نظرة عامة</button>
   <button class="nav" data-view="assets"><i>▦</i> الأصول والأجهزة</button>
   <button class="nav" data-view="logs"><i>≋</i> تحليل السجلات</button>
+  <button class="nav" data-view="source"><i>⌘</i> مراجعة الكود · 24 لغة</button>
   <button class="nav" data-view="incidents"><i>◇</i> إدارة الحوادث</button>
   <button class="nav" data-view="risk"><i>◈</i> تقييم المخاطر</button>
   <button class="nav" data-view="assistant"><i>✳</i> المساعد الأمني</button>
@@ -51,6 +52,19 @@
    <article class="panel"><div class="panel-head"><div><h3>مصدر البيانات</h3><p>الصق نصاً تجريبياً أو سجلات من نظام تديره. لا تضف كلمات مرور أو رموز جلسات.</p></div><button class="subtle" id="loadSample">تحميل عينة آمنة</button></div><textarea id="logInput" class="code-area" spellcheck="false" placeholder="2026-11-27T10:00:00Z LOGIN_FAILED user=demo&#10;2026-11-27T10:01:00Z LOGIN_SUCCESS user=demo"></textarea><div class="form-actions"><button class="primary" id="analyzeLogs">تحليل العينة</button><button class="secondary" id="clearLogs">مسح</button></div><div id="logOutput"></div></article>
    <p class="footnote">النتائج مؤشرات مبنية على أنماط نصية بسيطة وليست كشفاً مؤكداً أو حكماً بوجود اختراق.</p>
   </section>
+  <section class="view" id="view-source">
+   <div class="page-head"><div><div class="eyebrow">MULTI-LANGUAGE SOURCE REVIEW</div><h1>مراجعة <em>الكود البرمجي</em></h1><p>فحص ساكن أولي للكود الذي تدخله بنفسك دون تشغيله.</p></div><span class="tag">24 لغة مدعومة</span></div>
+   <article class="panel">
+    <div class="panel-head"><div><h3>مصدر الكود</h3><p>اختر اللغة، ثم الصق عينة من مشروع تملكه أو لديك إذن بمراجعته. لا تضع أسراراً حقيقية.</p></div></div>
+    <div class="toolbar"><select id="sourceLanguage" aria-label="لغة البرمجة">
+     <option value="go">Go</option><option value="typescript">TypeScript</option><option value="javascript">JavaScript</option><option value="python" selected>Python</option><option value="rust">Rust</option><option value="java">Java</option><option value="c">C</option><option value="cpp">C++</option><option value="csharp">C#</option><option value="php">PHP</option><option value="ruby">Ruby</option><option value="swift">Swift</option><option value="kotlin">Kotlin</option><option value="dart">Dart</option><option value="lua">Lua</option><option value="r">R</option><option value="perl">Perl</option><option value="scala">Scala</option><option value="bash">Bash</option><option value="powershell">PowerShell</option><option value="sql">SQL</option><option value="elixir">Elixir</option><option value="haskell">Haskell</option><option value="zig">Zig</option>
+    </select><span class="tag">تحليل محلي داخل المتصفح</span></div>
+    <textarea id="sourceCodeInput" class="code-area" maxlength="100000" spellcheck="false" placeholder="// الصق الكود هنا — حتى 100,000 حرف"></textarea>
+    <div class="form-actions"><button class="primary" id="reviewSourceBtn">مراجعة الكود</button><button class="secondary" id="clearSourceBtn">مسح</button></div>
+    <div id="sourceReviewOutput" aria-live="polite"></div>
+   </article>
+   <p class="footnote">المراجعة تعتمد على مؤشرات نصية عامة وليست محللاً كاملاً لكل لغة. لا يتم تشغيل الكود أو إرساله لخادم. النتائج تحتاج مراجعة بشرية ولا تثبت وجود ثغرة أو خلو الكود منها.</p>
+  </section>
   <section class="view" id="view-incidents">
    <div class="page-head"><div><div class="eyebrow">INCIDENT MANAGEMENT</div><h1>إدارة <em>الحوادث</em></h1><p>وثّق الملاحظات، عيّن الأولوية، وتابع حالة المعالجة.</p></div><button class="primary" id="addIncidentBtn">＋ تسجيل حادث</button></div>
    <div class="filters"><button class="filter active" data-filter="all">الكل</button><button class="filter" data-filter="open">مفتوح</button><button class="filter" data-filter="working">قيد المعالجة</button><button class="filter" data-filter="closed">مغلق</button></div>
@@ -75,7 +89,7 @@
    <article class="panel"><div id="auditRows" class="audit-list"></div><div id="auditEmpty" class="empty">لا توجد أحداث مسجلة حتى الآن.</div></article>
   </section>
  </div>
- <footer class="footer"><span>NEXUS SECURITY AI</span><span>DEFENSIVE BY DESIGN · V2.0</span></footer>
+ <footer class="footer"><span>NEXUS SECURITY AI</span><span>DEFENSIVE BY DESIGN · V3.1</span></footer>
 </main>
 </div>
 <div id="modalRoot"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
