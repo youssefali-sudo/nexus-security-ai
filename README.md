@@ -28,6 +28,9 @@
 - **AI Copilot:** اقتراحات تفسيرية فقط، مع مراجعة بشرية إلزامية.
 - **API Contract:** مواصفات OpenAPI أولية للخدمات الدفاعية.
 
+### Backend أولي للتجربة المحلية
+يوجد هيكل FastAPI محدود لمراجعة نصوص السجلات المرسلة يدويًا وفحص حالة الخدمة. راجع [Backend README](backend/README.md). هذا الهيكل غير محمي بالمصادقة ولا يصلح للنشر العام.
+
 ### مستندات V3
 - [Platform Blueprint](docs/PLATFORM_BLUEPRINT.md)
 - [Workflow Engine](docs/WORKFLOW_ENGINE.md)
