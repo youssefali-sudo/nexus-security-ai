@@ -15,7 +15,8 @@ Open `http://127.0.0.1:8000/docs`. Run tests with `pytest backend/tests`.
 ## Endpoints
 - `GET /api/v1/health` — local service health.
 - `GET /api/v1/languages` — registry of 24 supported languages.
-- `POST /api/v1/reviews/logs` — basic heuristic review of caller-supplied log text.\n- `POST /api/v1/analysis/defensive` — correlated event analysis with prioritized findings, severity and a 0–100 heuristic risk score.
+- `POST /api/v1/reviews/logs` — basic heuristic review of caller-supplied log text.
+- `POST /api/v1/analysis/defensive` — correlated event analysis with prioritized findings, severity and a 0–100 heuristic risk score.
 - `POST /api/v1/reviews/source` — heuristic static review of caller-supplied source code.
 
 Supported languages: Go, TypeScript, JavaScript, Python, Rust, Java, C, C++, C#, PHP, Ruby, Swift, Kotlin, Dart, Lua, R, Perl, Scala, Bash, PowerShell, SQL, Elixir, Haskell, and Zig.
