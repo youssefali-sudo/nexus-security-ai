@@ -16,7 +16,7 @@ function load(){try{return {...initial,...JSON.parse(localStorage.getItem(STORE)
 function save(){try{localStorage.setItem(STORE,JSON.stringify(state))}catch{notify("تعذر الحفظ المحلي؛ قد تكون مساحة المتصفح ممتلئة.")}renderAll()}
 function log(action,detail){state.audit.unshift({id:Date.now()+Math.random(),action,detail,time:new Date().toISOString()});state.audit=state.audit.slice(0,150)}
 function notify(s){const t=$("#toast");t.textContent=s;t.classList.add("show");clearTimeout(notify.timer);notify.timer=setTimeout(()=>t.classList.remove("show"),2400)}
-function go(id){$$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+id));$$(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===id));$("#pageTitle").textContent=({overview:"نظرة عامة",assets:"الأصول والأجهزة",logs:"تحليل السجلات",incidents:"إدارة الحوادث",risk:"تقييم الضوابط",assistant:"المساعد الأمني",reports:"التقارير",audit:"سجل التدقيق"})[id]||"NEXUS";if(id==="reports")renderReport();if(id==="audit")renderAudit()}
+function go(id){$$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+id));$$(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===id));$("#pageTitle").textContent=({overview:"نظرة عامة",assets:"الأصول والأجهزة",logs:"تحليل السجلات",incidents:"إدارة الحوادث",risk:"تقييم الضوابط",assistant:"المساعد الأمني",source:"مراجعة الكود · 24 لغة",reports:"التقارير",audit:"سجل التدقيق"})[id]||"NEXUS";if(id==="reports")renderReport();if(id==="audit")renderAudit()}
 $$("[data-view]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.view)));
 $$("[data-jump]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.jump)));
 function modal(title,fields,onSave){const root=$("#modalRoot"),back=document.createElement("div");back.className="modal-backdrop";const box=document.createElement("div");box.className="modal";const h=document.createElement("h3");h.textContent=title;box.append(h);const form=document.createElement("form");fields.forEach(f=>{const wrap=document.createElement("div");wrap.className="field";const label=document.createElement("label");label.textContent=f.label;wrap.append(label);let input;if(f.options){input=document.createElement("select");f.options.forEach(o=>{const op=document.createElement("option");op.value=o[0];op.textContent=o[1];input.append(op)})}else{input=document.createElement("input");input.type=f.type||"text";input.placeholder=f.placeholder||""}input.name=f.name;input.required=!!f.required;wrap.append(input);form.append(wrap)});const actions=document.createElement("div");actions.className="modal-actions";const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="إلغاء";cancel.onclick=()=>root.replaceChildren();const submit=document.createElement("button");submit.type="submit";submit.className="primary";submit.textContent="حفظ";actions.append(cancel,submit);form.append(actions);form.onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(form));onSave(data);root.replaceChildren()};box.append(form);back.append(box);back.addEventListener("click",e=>{if(e.target===back)root.replaceChildren()});root.replaceChildren(back);form.querySelector("input,select")?.focus()}
@@ -43,6 +43,47 @@ $("#exportJson").onclick=()=>{download("nexus-workspace-export.json",JSON.string
 function renderAudit(){const list=$("#auditRows");list.replaceChildren();state.audit.forEach(a=>{const row=document.createElement("div");row.className="audit-item";const info=document.createElement("div"),b=document.createElement("b"),small=document.createElement("small"),time=document.createElement("time");b.textContent=a.action;small.textContent=a.detail;time.textContent=new Date(a.time).toLocaleString("ar-EG");info.append(b,small);row.append(info,time);list.append(row)});$("#auditEmpty").hidden=state.audit.length>0}
 $("#clearAudit").onclick=()=>{if(confirm("مسح سجل التدقيق المحلي؟")){state.audit=[];save();notify("تم مسح السجل")}};
 function renderOverview(){const open=state.incidents.filter(i=>i.status!=="closed").length,pct=Math.round(state.checks.length/controls.length*100);$("#metricAssets").textContent=state.assets.length;$("#metricIncidents").textContent=open;$("#metricControls").textContent=pct+"%";$("#metricLogs").textContent=state.logCount.toLocaleString("en");const box=$("#recentActivity");box.replaceChildren();if(!state.audit.length){box.className="activity empty";box.textContent="لا توجد نشاطات بعد. ابدأ بإضافة أصل أو تسجيل حادث.";return}box.className="activity";state.audit.slice(0,5).forEach(a=>{const d=document.createElement("div");d.className="activity-item";const s=document.createElement("span"),t=document.createElement("small");s.textContent=a.action+" — "+a.detail;t.textContent=new Date(a.time).toLocaleString("ar-EG");d.append(s,t);box.append(d)})}
+
+const sourceRules=[
+ ["NXS-SEC-001","high","احتمال وجود سر ثابت داخل الكود؛ استخدم مخزناً آمناً للأسرار.",/\b(?:password|passwd|api[_-]?key|secret|access[_-]?token)\b\s*[:=]\s*["'][^"'\r\n]{6,}["']/i],
+ ["NXS-SEC-002","high","قد يكون التحقق من شهادة TLS معطلاً؛ راجع إعدادات الثقة.",/(?:verify\s*=\s*False|InsecureSkipVerify\s*:\s*true|rejectUnauthorized\s*:\s*false|CURLOPT_SSL_VERIFYPEER\s*,\s*false)/i],
+ ["NXS-SEC-003","medium","يوجد نمط تقييم ديناميكي؛ تحقق من المدخلات وقيّد العمليات.",/\b(?:eval|exec|Invoke-Expression)\s*\(/i],
+ ["NXS-SEC-004","medium","يوجد نمط تشغيل أوامر؛ راجع التعامل مع الوسائط والمدخلات غير الموثوقة.",/(?:subprocess\.(?:run|Popen|call)\s*\([^\n]*shell\s*=\s*True|\bos\.system\s*\(|\bshell_exec\s*\(|\bchild_process\.(?:exec|execSync)\s*\(|\bInvoke-Expression\b)/i],
+ ["NXS-SEC-005","medium","قد يكون استعلام SQL مركباً ديناميكياً؛ فضّل الاستعلامات المعلّمة.",/(?:execute|query)\s*\(\s*(?:f["']|["'][^\n]*\+|format\s*\()/i]
+];
+$("#reviewSourceBtn").onclick=()=>{
+ const code=$("#sourceCodeInput").value, language=$("#sourceLanguage").value, out=$("#sourceReviewOutput");
+ out.replaceChildren();
+ if(!code.trim()){notify("الصق الكود أولاً");return}
+ const findings=[];
+ sourceRules.forEach(([id,severity,summary,pattern])=>{
+  let match;
+  while((match=pattern.exec(code))!==null){
+   findings.push({id,severity,summary,line:code.slice(0,match.index).split("\n").length});
+   if(!pattern.global)break;
+  }
+ });
+ findings.sort((a,b)=>a.line-b.line);
+ const summary=document.createElement("div");summary.className="result-grid";
+ [[ "اللغة",language.toUpperCase() ],["الأسطر",code.split(/\r?\n/).length],["المؤشرات",findings.length]].forEach(([label,value])=>{
+  const box=document.createElement("div"),small=document.createElement("small"),strong=document.createElement("strong");
+  box.className="result-box";small.textContent=label;strong.textContent=value;box.append(small,strong);summary.append(box);
+ });
+ out.append(summary);
+ if(!findings.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="لم تُرصد مؤشرات ضمن القواعد الحالية. هذا لا يعني أن الكود خالٍ من المشكلات.";out.append(empty)}
+ findings.forEach(item=>{
+  const card=document.createElement("article");card.className="incident-card";
+  const info=document.createElement("div"),title=document.createElement("h3"),desc=document.createElement("p"),meta=document.createElement("div");
+  title.textContent=item.id+" · السطر "+item.line;
+  desc.textContent=item.summary;meta.className="incident-meta";
+  const badge=document.createElement("span");badge.className="badge "+(item.severity==="high"?"high":"medium");badge.textContent=item.severity==="high"?"أولوية مرتفعة":"أولوية متوسطة";
+  meta.append(badge);info.append(title,desc,meta);card.append(info);out.append(card);
+ });
+ const note=document.createElement("p");note.className="footnote";note.textContent="مؤشرات تقريبية فقط — لم يتم تشغيل أو إرسال الكود. راجع السياق يدوياً.";out.append(note);
+ log("مراجعة كود محلية",language+" — "+findings.length+" مؤشرات");save();notify("اكتملت المراجعة المحلية");
+};
+$("#clearSourceBtn").onclick=()=>{$("#sourceCodeInput").value="";$("#sourceReviewOutput").replaceChildren()};
+
 function renderAll(){renderAssets();renderIncidents();renderControls();renderOverview();renderAudit();renderReport()}
 renderAll();
 })();
